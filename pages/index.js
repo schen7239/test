@@ -16,12 +16,12 @@ export default function Home() {
       })
       setBranches(response.data);
     }
-
     const fetchBranchCommits = async(commit) => {
+      console.log(commit.sha);
       const response = await octokit.request('GET https://api.github.com/repos/{owner}/{repo}/commits?per_page=100&sha={sha}', {
         owner: 'schen7239',
         repo: 'test',
-        test: commit.sha,
+        sha: commit.sha,
       })
       return response;
     }
@@ -32,11 +32,12 @@ export default function Home() {
         {
           commit: await fetchBranchCommits(commit)
         }
-      )))
+      )
+      )
+      )
       setCommits(branchCommits);
     }
-    console.log(branches);
-    console.log(commits);
+    console.log(commits)
   return (
     <div className={styles.container}>
       <Head>
