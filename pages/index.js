@@ -5,19 +5,38 @@ import { Octokit } from "@octokit/core";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const octokit = new Octokit({ auth: `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` })
-  const [state, setState] = useState('');
-  useEffect(() => {
-    const fetchData = async() => {
+  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+  const [branches, setBranches] = useState({});
+  const [commits, setCommits] = useState({});
+
+    const fetchBranchData = async() => {
       const response = await octokit.request('GET /repos/{owner}/{repo}/branches', {
         owner: 'schen7239',
         repo: 'test'
       })
-      setState(response);
-      console.log(state);
+      setBranches(response.data);
     }
-    fetchData().catch(console.error)
-  }, [])
+
+    const fetchBranchCommits = async(commit) => {
+      const response = await octokit.request('GET https://api.github.com/repos/{owner}/{repo}/commits?per_page=100&sha={sha}', {
+        owner: 'schen7239',
+        repo: 'test',
+        test: commit.sha,
+      })
+      return response;
+    }
+
+    const fetchAllBranchCommits = async() => {
+      const branchCommits = await Promise.all(branches?.map(async ({ commit }) =>
+      (
+        {
+          commit: await fetchBranchCommits(commit)
+        }
+      )))
+      setCommits(branchCommits);
+    }
+    console.log(branches);
+    console.log(commits);
   return (
     <div className={styles.container}>
       <Head>
@@ -30,7 +49,12 @@ export default function Home() {
         <h1 className={styles.title}>
           Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
-        <h2>Fortnite</h2>
+       <button onClick={() => {
+         fetchBranchData()
+       }}>GET BRANCH DATA</button>
+       <button onClick={() => {
+         fetchAllBranchCommits()
+       }}>GET BRANCH COMMITS</button>
         <p className={styles.description}>
           Get started by editing{" "}
           <code className={styles.code}>pages/index.js</code>
